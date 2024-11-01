@@ -1,0 +1,28 @@
+{
+    "mongo_connection_uri": "mongodb://localhost:27017/",
+    "database_name": "Robonomics",
+
+    "rtsp_url": "...",
+    "width": 2880,
+    "height": 1800,
+    "timelapse_factor": 2,
+    "video_name": "output/video/timelapse.webm",
+
+    "graph": "output/graphs/graph.png",
+
+    "template_name": "passport_template.html",
+    "passport_name_template": "output/passports/NAME.html",
+
+    "ipfs_gateway_addr": "...",
+    "remote_ws": "wss://kusama.rpc.robonomics.network/",
+    "seed": "...",
+
+    "ipfs_prefix": "https://ipfs.io/ipfs/",
+    "explorer_prefix": "https://robonomics-freemium.subscan.io/extrinsic/",
+
+    "printer_usb_addr": "usb://0x04f9:0x209b/E78649D1Z671702",
+    "printer_model": "QL-800",
+    "paper_width": 62,
+    "qr_name": "output/qrs/qr.png"
+
+}

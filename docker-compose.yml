@@ -1,0 +1,23 @@
+version: "3.9"
+x-shared-top-level: &shared-top-level
+  restart: always
+
+
+
+services:
+  mongodb:
+    <<: *shared-top-level
+    container_name: mongodb
+    image: mongo:jammy
+    ports:
+      - "127.0.0.1:27017:27017" # ipfs api - expose if needed/wanted
+    environment:
+      MONGO_INITDB_DATABASE: Robonomics
+    volumes:
+      - ./mongodb-local:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
