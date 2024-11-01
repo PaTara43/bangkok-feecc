@@ -73,8 +73,8 @@ async def start_recording(name: str):
     if is_recording:
         raise HTTPException(status_code=400, detail="Recording is ongoing.")
 
-    # mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
-    # mongo.remove_all_items()
+    mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
+    mongo.remove_all_items()
     print("Mongo esp_data collection cleaned")
 
     if not is_recording:
