@@ -135,7 +135,7 @@ async def stop_recording():
         mongo.modify_item(item, {"video_cid": video_cid, "graph_cid": graph_cid, "esp_addr": esp_addr})
 
         print("Generating passport")
-        passport_path = passport_generator.generate_passport(item["name"], item["esp_addr"], video_cid, graph_cid)
+        passport_path = passport_generator.generate_passport(item["name"], item["address"], video_cid, graph_cid)
 
         print("Uploading passport")
         passport_cid, passport_size = ipfs_utils.upload_file(passport_path)
@@ -151,12 +151,12 @@ async def stop_recording():
         transaction = f"{config['explorer_prefix']}{datalog.record(passport_link)}"
         mongo.modify_item(item, {"transaction": transaction})
         print(transaction)
-        return {"message": f"Picture passport transaction: {transaction}"}
 
         print("Printing QRs")
         qr_printer.generate_qrs(passport_link, transaction)
         qr_printer.print_qrs()
         os.remove(config["qr_name"])
+        return {"message": f"Picture passport transaction: {transaction}"}
 
     else:
         return {"message": "No recording in progress."}

@@ -15,14 +15,14 @@ def generate_graph(timestamps: list, humidities: list, temperatures: list):
     ax1.set_ylabel('Humidity (%)', color='blue')
     ax1.plot(timestamps, humidities, color='blue', marker='o', label='Humidity')
     ax1.tick_params(axis='y', labelcolor='blue')
-    ax1.set_ylim(0, 60)  # Set y-axis limits for humidity
+    # ax1.set_ylim(0, 60)  # Set y-axis limits for humidity
 
     # Create a second y-axis for temperature
     ax2 = ax1.twinx()
     ax2.set_ylabel('Temperature (°C)', color='red')
     ax2.plot(timestamps, temperatures, color='red', marker='s', label='Temperature')
     ax2.tick_params(axis='y', labelcolor='red')
-    ax2.set_ylim(0, 60)  # Set y-axis limits for temperature
+    # ax2.set_ylim(0, 60)  # Set y-axis limits for temperature
 
     # Title and grid
     plt.title('Humidity and Temperature over Time')
