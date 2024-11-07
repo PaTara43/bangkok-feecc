@@ -6,6 +6,7 @@ packbits==0.6
 Pillow==9.5.0
 pyusb==1.2.1
 qrcode==8.0
+crust-interface-patara==0.2.0
 annotated-types==0.7.0 ; python_version >= "3.10" and python_version < "4.0"
 anyio==4.6.2.post1 ; python_version >= "3.10" and python_version < "4.0"
 appdirs==1.4.4 ; python_version >= "3.10" and python_version < "4.0"

@@ -1,6 +1,6 @@
 import qrcode
 import json
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 from brother_ql import BrotherQLRaster, create_label
 from brother_ql.conversion import convert
 from brother_ql.backends.helpers import send
@@ -10,46 +10,44 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 
-def create_qr_code(data, size=200):
-    """Generate a QR code image."""
+def create_qr_code(url, size=200):
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
-    qr.add_data(data)
+    qr.add_data(url)
     qr.make(fit=True)
-    return qr.make_image(fill_color="black", back_color="white").resize((size, size))
+    img = qr.make_image(fill_color="black", back_color="white")
+    img = img.resize((size, size))  # Resize QR code to desired size
+    return img
 
-def annotate_image(image, text, font):
-    """Annotate the image with the specified text using a given font."""
-    draw = ImageDraw.Draw(image)
-    text_width, text_height = draw.textsize(text, font=font)
-    # Position the text below the image
-    draw.text(((image.width - text_width) / 2, image.height - text_height - 20), text, fill="black", font=font)
 
-def generate_qrs(data1, data2):
-    """Create a combined image with two QR codes and their annotations."""
+# Function to combine images and QR codes vertically
+def generate_qrs(urls):
+    # Load images
+    image_paths = ['logos/ipfs.jpg', 'logos/robonomics.jpg']
+    images = [Image.open(path) for path in image_paths]
+
     # Create QR codes
-    qr_image1 = create_qr_code(data1)
-    qr_image2 = create_qr_code(data2)
+    qr_codes = [create_qr_code(url) for url in urls]
 
-    # Create a new blank image with enough space for both QR codes and annotations
-    combined_width = qr_image1.width + qr_image2.width + 20  # Add some space between
-    combined_height = max(qr_image1.height + 50, qr_image2.height + 50)  # Space for annotations
-    combined_image = Image.new('RGB', (combined_width, combined_height), 'white')
+    # Resize images to be 25% of QR code size
+    qr_size = qr_codes[0].size[0]  # Assuming both QR codes are the same size
+    new_image_size = int(qr_size * 0.25)
+    resized_images = [img.resize((round(img.width/(img.height/new_image_size)), round(img.height/(img.height/new_image_size)))) for img in images]
 
-    # Paste QR codes onto the combined image
-    combined_image.paste(qr_image1, (0, 0))
-    combined_image.paste(qr_image2, (qr_image1.width + 20, 0))
+    # Calculate total height for the final image
+    total_height = sum(qr.size[1] + img.size[1] for qr, img in zip(qr_codes, resized_images)) + 20
 
-    # Load a larger font (you can specify your own TTF file here)
-    try:
-        font = ImageFont.truetype("fonts/arialmt.ttf", size=32)  # Adjust size as needed
-    except IOError:
-        print("Custom font not found. Using default font.")
-        font = ImageFont.load_default()
+    # Create a new blank image with the calculated height
+    final_image = Image.new('RGB', (qr_size, total_height), (255, 255, 255))
 
-    # Annotate images with larger font
-    annotate_image(combined_image, "  Passport         Transaction", font)
+    # Paste images and QR codes into the final image
+    y_offset = 0
+    for qr, img in zip(qr_codes, resized_images):
+        final_image.paste(qr, (0, y_offset))
+        y_offset += qr.size[1]
+        final_image.paste(img, (int((qr_size - img.width) / 2), y_offset))  # Center image below QR code
+        y_offset += img.size[1]
 
-    combined_image.save(config["qr_name"])
+    final_image.save(config["qr_name"])
 
 def print_qrs():
     printer_identifier = config["printer_usb_addr"]
@@ -65,10 +63,7 @@ def print_qrs():
 if __name__ == '__main__':
 
     # Data for QR codes and their labels
-    link1 = "https://example.com/first"
-    link2 = "https://example.com/second"
-
-    # Create the combined image
-    generate_qrs(link1, link2)
+    urls = ['https://example.com/url1', 'https://example.com/url2']
+    generate_qrs(urls)
     # print_qrs()
     print(f"Combined QR codes saved as {config['qr_name']}.")

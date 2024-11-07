@@ -1,4 +1,5 @@
 import os
+import shutil
 import time
 from http.client import HTTPException
 
@@ -112,6 +113,7 @@ async def stop_recording():
         time.sleep(1)
         print("Uploading video.")
         video_cid, video_size = ipfs_utils.upload_file(os.path.abspath(config["video_name"]))
+        ipfs_utils.pin_cid(video_cid, video_size)
         print(video_cid, video_size)
         os.remove(config["video_name"])
 
@@ -126,6 +128,7 @@ async def stop_recording():
 
         print("Uploading graph.")
         graph_cid, graph_size = ipfs_utils.upload_file(os.path.abspath(config["graph"]))
+        ipfs_utils.pin_cid(graph_cid, graph_size)
         print(graph_cid, graph_size)
         os.remove(config["graph"])
 
@@ -140,6 +143,7 @@ async def stop_recording():
         print("Uploading passport")
         passport_cid, passport_size = ipfs_utils.upload_file(passport_path)
         passport_link = f"{config['ipfs_prefix']}{passport_cid}"
+        ipfs_utils.pin_cid(passport_cid, passport_size)
         print(passport_cid, passport_size)
 
         print("Adding passport_cid to mongoDB")
@@ -153,8 +157,9 @@ async def stop_recording():
         print(transaction)
 
         print("Printing QRs")
-        qr_printer.generate_qrs(passport_link, transaction)
+        qr_printer.generate_qrs([passport_link, transaction])
         qr_printer.print_qrs()
+        shutil.copyfile(config["qr_name"], config["qr_name"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
         os.remove(config["qr_name"])
         return {"message": f"Picture passport transaction: {transaction}"}
 
