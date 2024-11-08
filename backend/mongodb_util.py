@@ -61,7 +61,7 @@ class MongoDBUtil:
         timestamps = [item.get('timestamp', None) for item in items_list]
         humidities = [item.get('humidity', None) for item in items_list]
         temperatures = [item.get('temperature', None) for item in items_list]
-        address = items_list[0].get('address', None)
+        address = items_list[-1].get('address', None)
 
         return [address, {"Timestamps": timestamps, "Humidities": humidities, "Temperatures": temperatures}]
 

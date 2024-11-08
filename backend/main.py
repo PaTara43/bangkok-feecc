@@ -46,7 +46,7 @@ def capture_rtsp_stream():
     fourcc = cv2.VideoWriter_fourcc(*'vp80')
     output_file = config["video_name"]
     fps = 30  # Output frames per second for the video
-    out = cv2.VideoWriter(output_file, fourcc, fps, (config['width'], config['height']))  # Adjust resolution as needed
+    out = cv2.VideoWriter(output_file, fourcc, fps, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))  # Adjust resolution as needed
 
     frame_counter = 0
     timelapse_factor = config['timelapse_factor']  # Capture every 200th frame
@@ -58,7 +58,6 @@ def capture_rtsp_stream():
 
         if frame_counter % timelapse_factor == 0:
             out.write(frame)
-
         frame_counter += 1
 
     cap.release()
@@ -113,9 +112,7 @@ async def stop_recording():
         time.sleep(1)
         print("Uploading video.")
         video_cid, video_size = ipfs_utils.upload_file(os.path.abspath(config["video_name"]))
-        ipfs_utils.pin_cid(video_cid, video_size)
         print(video_cid, video_size)
-        os.remove(config["video_name"])
 
         print("Generating graph.")
         mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
@@ -128,9 +125,7 @@ async def stop_recording():
 
         print("Uploading graph.")
         graph_cid, graph_size = ipfs_utils.upload_file(os.path.abspath(config["graph"]))
-        ipfs_utils.pin_cid(graph_cid, graph_size)
         print(graph_cid, graph_size)
-        os.remove(config["graph"])
 
         print("Updating mongo entry")
         mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "pictures")
@@ -138,12 +133,11 @@ async def stop_recording():
         mongo.modify_item(item, {"video_cid": video_cid, "graph_cid": graph_cid, "esp_addr": esp_addr})
 
         print("Generating passport")
-        passport_path = passport_generator.generate_passport(item["name"], item["address"], video_cid, graph_cid)
+        passport_path = passport_generator.generate_passport(item["name"], esp_addr, video_cid, graph_cid)
 
         print("Uploading passport")
         passport_cid, passport_size = ipfs_utils.upload_file(passport_path)
         passport_link = f"{config['ipfs_prefix']}{passport_cid}"
-        ipfs_utils.pin_cid(passport_cid, passport_size)
         print(passport_cid, passport_size)
 
         print("Adding passport_cid to mongoDB")
@@ -158,8 +152,17 @@ async def stop_recording():
 
         print("Printing QRs")
         qr_printer.generate_qrs([passport_link, transaction])
-        qr_printer.print_qrs()
-        shutil.copyfile(config["qr_name"], config["qr_name"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
+#        qr_printer.print_qrs()
+#        qr_printer.print_qrs()
+        shutil.copyfile(config["qr_name"],
+                        config["qr_name"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
+
+        #        ipfs_utils.pin_cid(video_cid, video_size)
+        #        ipfs_utils.pin_cid(graph_cid, graph_size)
+        #        ipfs_utils.pin_cid(passport_cid, passport_size)
+
+        os.remove(config["graph"])
+        os.remove(config["video_name"])
         os.remove(config["qr_name"])
         return {"message": f"Picture passport transaction: {transaction}"}
 
@@ -174,14 +177,15 @@ async def receive_esp_data(data: dict):
     if not required_keys.issubset(data.keys()):
         raise HTTPException(status_code=400, detail="Missing required keys")
 
-
-
     # Get the current time
-    formatted_time = datetime.now().strftime('%H:%M')
+    formatted_time = datetime.now().strftime('%H:%M:%S')
     data["timestamp"] = formatted_time
+    data["humidity"] = float(data["humidity"])
+    data["temperature"] = float(data["temperature"])
 
     # Add the data to MongoDB using the utility function
     mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
+    print(f"esp_data:\n{data}")
     item_id = mongo.add_item(data)
 
     return {"message": "Data added successfully", "item_id": item_id}
