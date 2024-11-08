@@ -7,7 +7,7 @@ with open('config.json') as config_file:
     config = json.load(config_file)
 
 
-def generate_passport(name: str, esp_addr: str, video_cid: str, graph_cid: str):
+def generate_passport(name: str, description: str, esp_addr: str, video_cid: str, graph_cid: str):
     file_loader = FileSystemLoader('.')
     env = Environment(loader=file_loader)
 
@@ -15,6 +15,7 @@ def generate_passport(name: str, esp_addr: str, video_cid: str, graph_cid: str):
     template = env.get_template(config["template_name"])
     data = {
         "name": name,
+        "description": description,
         "source_address": robonomicsinterface.Account(seed=config["seed"]).get_address(),
         "esp_address": esp_addr,
         "video_cid": video_cid,

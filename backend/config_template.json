@@ -16,6 +16,8 @@
     "ipfs_gateway_addr": "...",
     "remote_ws": "wss://kusama.rpc.robonomics.network/",
     "seed": "...",
+    "api_key": "...",
+    "secret_key": "...",
 
     "ipfs_prefix": "https://ipfs.io/ipfs/",
     "explorer_prefix": "https://robonomics-freemium.subscan.io/extrinsic/",

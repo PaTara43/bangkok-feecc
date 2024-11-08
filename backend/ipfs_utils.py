@@ -1,7 +1,7 @@
 import ipfshttpclient2
 import json
 from robonomicsinterface import web_3_auth
-import crustinterface
+from pinatapy import PinataPy
 
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -14,8 +14,11 @@ def upload_file(path: str) -> tuple:
         return res['Hash'], res['Size']
     except Exception as e:
         print(f"Error uploading to ipfs: {e}. Retrying...")
-        upload_file(path)
+        return upload_file(path)
 
-def pin_cid(cid, size):
-    interface = crustinterface.Mainnet(seed=config["seed"])
-    interface.store_file(cid, size)
+def pin_file(file_path):
+    api_key = config["api_key"]
+    secret_key = config["secret_key"]
+    pinata = PinataPy(api_key, secret_key)
+    pinata.pin_file_to_ipfs(path_to_file=file_path)
+    print("pinned to pinata")

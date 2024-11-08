@@ -64,12 +64,12 @@ def capture_rtsp_stream():
     out.release()
 
 @app.post("/start")
-async def start_recording(name: str):
+async def start_recording(name: str, description: str):
     print(1)
     global is_recording, capture_thread
 
-    if type(name) != str or name == "":
-        raise HTTPException(status_code=400, detail="Query parameter 'name' is required.")
+    if type(name) != str or name == "" or type(description) != str or description == "":
+        raise HTTPException(status_code=400, detail="Query parameter 'name' or 'description' is required.")
     if is_recording:
         raise HTTPException(status_code=400, detail="Recording is ongoing.")
 
@@ -88,6 +88,7 @@ async def start_recording(name: str):
     mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "pictures")
     mongo.add_item({
         "name": name,
+        "description": description,
         "video_cid": None,
         "graph_cid": None,
         "passport_cid": None,
@@ -133,7 +134,7 @@ async def stop_recording():
         mongo.modify_item(item, {"video_cid": video_cid, "graph_cid": graph_cid, "esp_addr": esp_addr})
 
         print("Generating passport")
-        passport_path = passport_generator.generate_passport(item["name"], esp_addr, video_cid, graph_cid)
+        passport_path = passport_generator.generate_passport(item["name"], item["description"], esp_addr, video_cid, graph_cid)
 
         print("Uploading passport")
         passport_cid, passport_size = ipfs_utils.upload_file(passport_path)
@@ -157,9 +158,9 @@ async def stop_recording():
         shutil.copyfile(config["qr_name"],
                         config["qr_name"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
 
-        #        ipfs_utils.pin_cid(video_cid, video_size)
-        #        ipfs_utils.pin_cid(graph_cid, graph_size)
-        #        ipfs_utils.pin_cid(passport_cid, passport_size)
+        ipfs_utils.pin_file(config["video_name"])
+        ipfs_utils.pin_file(config["graph"])
+        ipfs_utils.pin_file(passport_path)
 
         os.remove(config["graph"])
         os.remove(config["video_name"])
