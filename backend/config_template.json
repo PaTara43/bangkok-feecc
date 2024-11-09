@@ -6,7 +6,7 @@
     "width": 2880,
     "height": 1800,
     "timelapse_factor": 2,
-    "video_name": "output/video/timelapse.webm",
+    "video_name": "output/video/timelapse.mp4",
 
     "graph": "output/graphs/graph.png",
 
