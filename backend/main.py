@@ -154,8 +154,8 @@ async def stop_recording():
 
         print("Printing QRs")
         qr_printer.generate_qrs([passport_link, transaction])
-#        qr_printer.print_qrs()
-#        qr_printer.print_qrs()
+        qr_printer.print_qrs()
+        qr_printer.print_qrs()
         shutil.copyfile(config["qr_name"],
                         config["qr_name"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
 
