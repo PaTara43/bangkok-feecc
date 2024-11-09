@@ -15,6 +15,6 @@ sudo reboot
 5. Launch server `python3 main.py`
 6. install apache `sudo apt install apache2`
 7. get your ip `ip a`
-8. replace all `localhost` entries in `index.html` (line 86, 106) with your ip
+8. replace all `localhost` entries in `index.html` (line 88, 108) with your ip
 9. copy `index.html` to `/var/www/html`
 10. try access e.g. http://rpi_addr/index.html from cell phone

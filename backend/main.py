@@ -43,7 +43,7 @@ def capture_rtsp_stream():
     cap = cv2.VideoCapture(rtsp_url)
 
     # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'vp80')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     output_file = config["video_name"]
     fps = 30  # Output frames per second for the video
     out = cv2.VideoWriter(output_file, fourcc, fps, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))))  # Adjust resolution as needed
@@ -111,9 +111,6 @@ async def stop_recording():
         print("Recording stopped.")
 
         time.sleep(1)
-        print("Uploading video.")
-        video_cid, video_size = ipfs_utils.upload_file(os.path.abspath(config["video_name"]))
-        print(video_cid, video_size)
 
         print("Generating graph.")
         mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
@@ -123,6 +120,10 @@ async def stop_recording():
         humidities = esp_data[1]["Humidities"]
         temperatures = esp_data[1]["Temperatures"]
         graph_constructor.generate_graph(timestamps=timestamps, humidities=humidities, temperatures=temperatures)
+
+        print("Uploading video.")
+        video_cid, video_size = ipfs_utils.upload_file(os.path.abspath(config["video_name"]))
+        print(video_cid, video_size)
 
         print("Uploading graph.")
         graph_cid, graph_size = ipfs_utils.upload_file(os.path.abspath(config["graph"]))
