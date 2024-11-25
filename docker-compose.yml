@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 10s
   ipfs:
-    build: .
+    image: ipfs/kubo:release
     restart: unless-stopped
     environment:
       - IPFS_PATH=/data/ipfs
