@@ -36,10 +36,9 @@ def generate_passport(name: str, description: str, esp_addr: str, video_cid: str
     return os.path.abspath(output_file_path)
 
 if __name__ == '__main__':
-    # video = ipfs_utils.pin_file(config["video_name"])["Hash"]
-    video = "QmYkRcfg9V1aR8grBqYr8TXnxXGRqSFe9A23oLe3dWrBpD"
+    video = ipfs_utils.pin_file(config["video_name"])
     print(f'video: {video}')
-    graph = ipfs_utils.pin_file(config["graph"])["IpfsHash"]
+    graph = ipfs_utils.pin_file(config["graph"])
     print(f'graph: {graph}')
 
     mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
@@ -49,7 +48,7 @@ if __name__ == '__main__':
     item = mongo.get_latest_item()
 
     passport_path = generate_passport(item["name"], item["description"], esp_addr, video, graph)
-    passport_cid = ipfs_utils.pin_file(passport_path)["IpfsHash"]
+    passport_cid = ipfs_utils.pin_file(passport_path)
     print(f'passport: {passport_cid}')
     passport_link = f"{config['ipfs_prefix']}{passport_cid}"
 

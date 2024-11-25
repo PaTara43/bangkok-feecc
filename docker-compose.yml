@@ -21,3 +21,13 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+  ipfs:
+    build: .
+    restart: unless-stopped
+    environment:
+      - IPFS_PATH=/data/ipfs
+    ports:
+      - 4001:4001/tcp
+      - 4001:4001/udp
+      - 127.0.0.1:5001:5001
+      - 127.0.0.1:8080:8080

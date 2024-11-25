@@ -49,3 +49,8 @@ def pin_file(file_path):
     except Exception as e:
         print(f"Error uploading to multi agent ipfs: {e}. Retrying...")
         custom_hash, custom_size = None, None
+    return custom_hash
+
+if __name__ == '__main__':
+    print(pin_file(config["video"]))
+    print(pin_file(config["graph"]))
