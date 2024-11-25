@@ -154,10 +154,14 @@ async def stop_recording():
 
         print("Printing QRs")
         qr_printer.generate_qrs([passport_link, transaction])
-        qr_printer.print_qrs()
-        qr_printer.print_qrs()
+        #qr_printer.print_qrs()
+        #qr_printer.print_qrs()
         shutil.copyfile(config["qr_name"],
                         config["qr_name"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
+        shutil.copyfile(config["graph"],
+                        config["graph"].replace(".png", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.png"))
+        shutil.copyfile(config["video_name"],
+                        config["video_name"].replace(".mp4", f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.mp4"))
 
         ipfs_utils.pin_file(config["video_name"])
         ipfs_utils.pin_file(config["graph"])

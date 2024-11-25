@@ -3,6 +3,10 @@ import json
 import os
 import robonomicsinterface
 
+import mongodb_util
+import ipfs_utils
+import qr_printer
+
 with open('config.json') as config_file:
     config = json.load(config_file)
 
@@ -32,4 +36,28 @@ def generate_passport(name: str, description: str, esp_addr: str, video_cid: str
     return os.path.abspath(output_file_path)
 
 if __name__ == '__main__':
-    generate_passport("123")
+    # video = ipfs_utils.pin_file(config["video_name"])["Hash"]
+    video = "QmYkRcfg9V1aR8grBqYr8TXnxXGRqSFe9A23oLe3dWrBpD"
+    print(f'video: {video}')
+    graph = ipfs_utils.pin_file(config["graph"])["IpfsHash"]
+    print(f'graph: {graph}')
+
+    mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "esp_data")
+    esp_data = mongo.get_esp_data()
+    esp_addr = esp_data[0]
+    mongo = mongodb_util.MongoDBUtil(config['mongo_connection_uri'], config['database_name'], "pictures")
+    item = mongo.get_latest_item()
+
+    passport_path = generate_passport(item["name"], item["description"], esp_addr, video, graph)
+    passport_cid = ipfs_utils.pin_file(passport_path)["IpfsHash"]
+    print(f'passport: {passport_cid}')
+    passport_link = f"{config['ipfs_prefix']}{passport_cid}"
+
+
+    robonomics = robonomicsinterface.Account(seed=config["seed"], remote_ws=config["remote_ws"])
+    datalog = robonomicsinterface.Datalog(robonomics)
+    transaction = f"{config['explorer_prefix']}{datalog.record(passport_link)}"
+
+    qr_printer.generate_qrs([passport_link, transaction])
+    qr_printer.print_qrs()
+    qr_printer.print_qrs()
