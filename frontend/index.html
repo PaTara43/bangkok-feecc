@@ -67,6 +67,7 @@
         <input type="text" id="picture" placeholder="insert picture name" required>
         <input type="text" id="description" placeholder="insert description" required>
         <button id="startButton">Start</button>
+        <button id="pauseResumeButton">Pause</button>
         <button id="stopButton" disabled>Stop</button>
     </div>
 
@@ -76,6 +77,7 @@
     <script>
         let timerInterval;
         let seconds = 0;
+        let isPaused = false;
 
         document.getElementById('startButton').onclick = async () => {
             const picture = document.getElementById('picture').value.trim();
@@ -101,6 +103,32 @@
             }, 1000);
 
             document.getElementById('stopButton').disabled = false; // Enable stop button
+        };
+
+        document.getElementById('pauseResumeButton').onclick = async () => {
+            const button = document.getElementById('pauseResumeButton');
+            const response = await fetch(`http://localhost:8000/${isPaused ? 'resume' : 'pause'}`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+
+            // Display the pause/resume message and keep previous messages
+            document.getElementById('response').innerHTML += '\n' + formatResponse(data.message);
+
+            if (isPaused) {
+                // Resume the timer
+                timerInterval = setInterval(() => {
+                    seconds++;
+                    document.getElementById('timer').innerText = `${seconds} seconds`;
+                }, 1000);
+                button.innerText = 'Pause';
+            } else {
+                // Pause the timer
+                clearInterval(timerInterval);
+                button.innerText = 'Resume';
+            }
+
+            isPaused = !isPaused;
         };
 
         document.getElementById('stopButton').onclick = async () => {

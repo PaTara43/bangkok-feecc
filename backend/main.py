@@ -34,10 +34,11 @@ app.add_middleware(
 is_recording = False
 capture_thread = None
 rtsp_url = config['rtsp_url']  # Replace with your RTSP stream URL
+pause = False  # Global variable to control pause/resume
 
 
 def capture_rtsp_stream():
-    global is_recording
+    global is_recording, pause
 
     # Create VideoCapture object to read from the RTSP stream
     cap = cv2.VideoCapture(rtsp_url)
@@ -52,6 +53,9 @@ def capture_rtsp_stream():
     timelapse_factor = config['timelapse_factor']  # Capture every 200th frame
 
     while is_recording:
+        if pause:
+            continue
+
         ret, frame = cap.read()
         if not ret:
             break
@@ -175,8 +179,24 @@ async def stop_recording():
     else:
         return {"message": "No recording in progress."}
 
+@app.post("/pause")
+async def pause_capture():
+    global pause
+    pause = True
+    return {"message": "Capture paused"}
+
+@app.post("/resume")
+async def resume_capture():
+    global pause
+    pause = False
+    return {"message": "Capture resumed"}
+
 @app.post("/esp_data")
 async def receive_esp_data(data: dict):
+    global pause
+    if pause:
+        return {"message": "Capture is paused"}
+
     required_keys = {'address', 'humidity', 'temperature'}
 
     # Validate incoming data
